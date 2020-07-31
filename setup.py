@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 import glob
 
 NAME='nagios-plugin-grnet-agora'

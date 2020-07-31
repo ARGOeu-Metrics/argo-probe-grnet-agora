@@ -46,10 +46,8 @@ optional arguments:
 
 Agora Health Check does the following:
 
-- Checks if the Agora instance is up and returns 200 OK
-- Checks if /api/v2/services is up and returns a valid JSON
-- Checks if /api/v2/ext-services is up and returns a valid JSON
-- If given a username-password combinations, checks if it can login
+- Given the username and password it will try to login and retrieve the respective auth token
+- Check if /api/v2/resources is responding properly and can be accessed with the previously retrieved auth token
 
 
 The probe returns exit codes and responses according to Nagios Plugins Specifications.
@@ -77,3 +75,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/]([http://www.gnu.org/licenses/).
 
+## Funding
+The work represented by this software was partially funded by
+
+- EOSC-Hub project European Union (EU) Horizon 2020 program under Grant number 77753642.
+- EUDAT2020 European Union’s H2020 Program under Contract No. 654065.
+- EUDAT Framework Programme 7 under Contract No. 283304.
