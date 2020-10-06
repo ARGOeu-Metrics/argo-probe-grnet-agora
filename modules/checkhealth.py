@@ -22,24 +22,6 @@ class AgoraHealthCheck:
         self.nagios = NagiosResponse("Agora is up.")
         self.token = ""
 
-    def check_endpoint(self, endpointExtension='', checkJSON=False):
-        try:
-            endpoint = self.args.url + endpointExtension
-            r = requests.get(endpoint, verify=self.verify_ssl,
-                             timeout=self.args.timeout)
-            r.raise_for_status()
-            if checkJSON and not len(r.json()):
-                self.nagios.writeCriticalMessage("No services found at " + endpoint)
-        except requests.exceptions.HTTPError as e:
-            code = e.response.status_code
-            self.nagios.writeCriticalMessage("Invalid response code: " + str(code))
-        except requests.exceptions.SSLError as e:
-            self.nagios.writeCriticalMessage("SSL Error")
-        except requests.exceptions.RequestException as e:
-            self.nagios.writeCriticalMessage("Cannot connect to endpoint " + endpoint)
-        except ValueError:
-            self.nagios.writeCriticalMessage("Malformed JSON at " + endpoint)
-
     def login(self):
         payload = {
                     'username': self.args.username,
@@ -79,12 +61,13 @@ class AgoraHealthCheck:
             else:
                 self.nagios.writeCriticalMessage("Could not retrieve resources.")
 
-        if len(resources_resp.json()) == 0:
-            if self.args.verbose:
-                self.nagios.writeWarningMessage("No resources available.{0}.".format(resources_resp.text))
-            else:
-                self.nagios.writeWarningMessage("No resources available.")
-            return
+        if self.args.listview_check:
+            if len(resources_resp.json()) == 0:
+                if self.args.verbose:
+                    self.nagios.writeWarningMessage("No resources available.{0}.".format(resources_resp.text))
+                else:
+                    self.nagios.writeWarningMessage("No resources available.")
+                return
 
     def run(self):
         try:
@@ -104,6 +87,9 @@ def parse_arguments(args):
                         type=str, help='Agora\'s url')
     parser.add_argument('-v', '--verbose', dest='verbose',
                         action='store_true', help='verbose output')
+    parser.add_argument('-l', '--listview', dest='listview_check',
+                        default=False, action='store_true',
+                        help='check if the listViews have records')
     parser.add_argument('-t', '--timeout', dest='timeout', type=int,
                         default=TIMEOUT,
                         help='timeout for requests, default=' + str(TIMEOUT))
