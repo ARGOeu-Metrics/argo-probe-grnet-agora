@@ -4,63 +4,80 @@ import sys
 import argparse
 import requests
 from NagiosResponse import NagiosResponse
+import json
 
 TIMEOUT = 180
 
 
 class AgoraHealthCheck:
 
-    SERVICES = '/api/v2/services'
-    EXT_SERVICES = '/api/v2/ext-services'
-    LOGIN = '/api/v2/auth/login/'
+    RESOURCES_PATH = '/api/v2/resources/'
+    LOGIN_PATH = '/api/v2/auth/login/'
+    HEADERS = {'Content-type': 'application/json'}
+
 
     def __init__(self, args=sys.argv[1:]):
         self.args = parse_arguments(args)
         self.verify_ssl = not self.args.ignore_ssl
         self.nagios = NagiosResponse("Agora is up.")
+        self.token = ""
 
-    def check_endpoint(self, endpointExtension='', checkJSON=False):
-        try:
-            endpoint = self.args.url + endpointExtension
-            r = requests.get(endpoint, verify=self.verify_ssl,
-                             timeout=self.args.timeout)
-            r.raise_for_status()
-            if checkJSON and not len(r.json()):
-                self.nagios.writeCriticalMessage("No services found at " + endpoint)
-        except requests.exceptions.HTTPError as e:
-            code = e.response.status_code
-            self.nagios.writeCriticalMessage("Invalid response code: " + str(code))
-        except requests.exceptions.SSLError as e:
-            self.nagios.writeCriticalMessage("SSL Error")
-        except requests.exceptions.RequestException as e:
-            self.nagios.writeCriticalMessage("Cannot connect to endpoint " + endpoint)
-        except ValueError:
-            self.nagios.writeCriticalMessage("Malformed JSON at " + endpoint)
+    def login(self):
+        payload = {
+                    'username': self.args.username,
+                    'password': self.args.password,
+        }
 
-    def login(self, loginEndpoint):
-        try:
-            payload = {
-                        'username': self.args.username,
-                        'password': self.args.password,
-            }
-            r = requests.post(self.args.url + loginEndpoint, data=payload,
-                    verify=self.verify_ssl)
-            r.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            code = e.response.status_code
-            if code in [400, 401]:
-                self.nagios.writeCriticalMessage("Cannot login")
+        login_url = 'https://{0}/{1}'.format(self.args.url, self.LOGIN_PATH)
+        
+        login_resp = requests.post(url=login_url, data=json.dumps(payload), headers=self.HEADERS, verify=self.args.ignore_ssl, timeout=self.args.timeout)
+
+        if login_resp.status_code != 200:
+            if self.args.verbose:
+                self.nagios.writeCriticalMessage("Cannot login.{0}.".format(login_resp.text))
             else:
-                self.nagios.writeCriticalMessage("Invalid response code: " + str(code))
-        except requests.exceptions.RequestException as e:
-            self.nagios.writeCriticalMessage("Cannot connect to endpoint " + endpoint)
+                self.nagios.writeCriticalMessage("Cannot login.")
+            return
+
+        if "auth_token" not in login_resp.json():
+            if self.args.verbose:
+                self.nagios.writeCriticalMessage("Could not retrieve auth_token.{0}.".format(login_resp.text))
+            else:
+                self.nagios.writeCriticalMessage("Could not retrieve auth_token.")
+            return
+
+        self.token = login_resp.json()["auth_token"]
+
+
+    def check_resources(self):
+        self.HEADERS['Authorization'] = 'Token {}'.format(self.token)
+        resources_url = 'https://{0}/{1}'.format(self.args.url, self.RESOURCES_PATH)
+
+        resources_resp = requests.get(url=resources_url, headers=self.HEADERS, verify=self.args.ignore_ssl, timeout=self.args.timeout)
+
+        if resources_resp.status_code != 200:
+            if self.args.verbose:
+                self.nagios.writeCriticalMessage("Could not retrieve resources.{0}.".format(resources_resp.text))
+            else:
+                self.nagios.writeCriticalMessage("Could not retrieve resources.")
+
+        if self.args.listview_check:
+            if len(resources_resp.json()) == 0:
+                if self.args.verbose:
+                    self.nagios.writeWarningMessage("No resources available.{0}.".format(resources_resp.text))
+                else:
+                    self.nagios.writeWarningMessage("No resources available.")
+                return
 
     def run(self):
-        self.check_endpoint()
-        self.check_endpoint(self.SERVICES, checkJSON=True)
-        self.check_endpoint(self.EXT_SERVICES, checkJSON=True)
-        if self.args.username and self.args.password:
-            self.login(self.LOGIN)
+        try:
+            self.login()
+            self.check_resources()
+        except requests.exceptions.SSLError as ssle:
+            self.nagios.writeCriticalMessage("SSL Error.{0}.".format(str(ssle)))
+        except requests.exceptions.ConnectionError as ce:
+            self.nagios.writeCriticalMessage("Connecton Error.{0}.".format(str(ce)))
+        
         self.nagios.printAndExit()
 
 
@@ -70,6 +87,9 @@ def parse_arguments(args):
                         type=str, help='Agora\'s url')
     parser.add_argument('-v', '--verbose', dest='verbose',
                         action='store_true', help='verbose output')
+    parser.add_argument('-l', '--listview', dest='listview_check',
+                        default=False, action='store_true',
+                        help='check if the listViews have records')
     parser.add_argument('-t', '--timeout', dest='timeout', type=int,
                         default=TIMEOUT,
                         help='timeout for requests, default=' + str(TIMEOUT))
