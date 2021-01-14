@@ -22,13 +22,13 @@ $ python setup.py install
 
 ## Usage
 ```
-checkhealth [-h] -U URL [-v] [-t TIMEOUT] [-u USERNAME]
+checkhealth [-h] -H Hostname [-v] [-t TIMEOUT] [-u USERNAME]
             [-p PASSWORD] [-i]
 
 
 optional arguments:
   -h, --help            show this help message and exit
-  -U URL, --url URL     Agora's url
+  -H Hostname, --hostname Hostname     Agora's hostname
   -v, --verbose         verbose output
   -l, --listview        check if the listViews have records
   -t TIMEOUT, --timeout TIMEOUT
