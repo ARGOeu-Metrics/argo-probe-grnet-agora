@@ -28,7 +28,7 @@ class AgoraHealthCheck:
                     'password': self.args.password,
         }
 
-        login_url = 'https://{0}/{1}'.format(self.args.url, self.LOGIN_PATH)
+        login_url = 'https://{0}/{1}'.format(self.args.hostname, self.LOGIN_PATH)
         
         login_resp = requests.post(url=login_url, data=json.dumps(payload), headers=self.HEADERS, verify=self.args.ignore_ssl, timeout=self.args.timeout)
 
@@ -51,7 +51,7 @@ class AgoraHealthCheck:
 
     def check_resources(self):
         self.HEADERS['Authorization'] = 'Token {}'.format(self.token)
-        resources_url = 'https://{0}/{1}'.format(self.args.url, self.RESOURCES_PATH)
+        resources_url = 'https://{0}/{1}'.format(self.args.hostname, self.RESOURCES_PATH)
 
         resources_resp = requests.get(url=resources_url, headers=self.HEADERS, verify=self.args.ignore_ssl, timeout=self.args.timeout)
 
@@ -83,8 +83,8 @@ class AgoraHealthCheck:
 
 def parse_arguments(args):
     parser = argparse.ArgumentParser(description="Nagios Probe for Agora")
-    parser.add_argument('-U', '--url', dest='url', required=True,
-                        type=str, help='Agora\'s url')
+    parser.add_argument('-H', '--hostname', dest='hostname', required=True,
+                        type=str, help='Agora\'s hostname')
     parser.add_argument('-v', '--verbose', dest='verbose',
                         action='store_true', help='verbose output')
     parser.add_argument('-l', '--listview', dest='listview_check',
