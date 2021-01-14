@@ -4,7 +4,7 @@
 
 Name: nagios-plugin-grnet-agora
 Summary: Agora related probes
-Version: 0.3
+Version: 0.4
 Release: 1%{?dist}
 License: AGPLv3
 Source0: %{name}-%{version}.tar.gz
