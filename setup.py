@@ -1,8 +1,8 @@
 from setuptools import setup
 import glob
 
-NAME='nagios-plugin-grnet-agora'
-NAGIOSPLUGINS='/usr/libexec/argo-monitoring/probes/grnet-agora'
+NAME='argo-probe-grnet-agora'
+NAGIOSPLUGINS='/usr/libexec/argo/probes/grnet-agora'
 
 def get_ver():
     try:
@@ -31,7 +31,7 @@ setup(name=NAME,
       Currently it supports the following components:
         - Agora Health Check
       ''',
-      url='https://eosc.agora.grnet.gr/',
+      url='https://demo.agora.grnet.gr/catalog/',
       data_files=data_files(),
       packages=['agora_probes'],
       package_dir={'agora_probes': 'modules/'},
