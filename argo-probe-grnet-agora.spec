@@ -28,14 +28,14 @@ Currently it supports the following components:
 rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root %{buildroot} --record=INSTALLED_FILES
 install -d -m 755 %{buildroot}/%{dir}
-install -d -m 755 %{buildroot}/%{python_sitelib}/grnet_agora
+install -d -m 755 %{buildroot}/%{python_sitelib}/grnet-agora
 
 %clean
 rm -rf %{buildroot}
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root,-)
-%{python_sitelib}/argo-probe-grnet-agora
+%{python_sitelib}/agora_probes
 %{dir}
 
 
