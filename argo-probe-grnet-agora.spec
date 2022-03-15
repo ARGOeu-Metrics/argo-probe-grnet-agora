@@ -1,8 +1,8 @@
 # sitelib
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
-%define dir /usr/libexec/argo-monitoring/probes/grnet-agora
+%define dir /usr/libexec/argo/probes/grnet-agora
 
-Name: nagios-plugin-grnet-agora
+Name: argo-probe-grnet-agora
 Summary: Agora related probes
 Version: 0.4
 Release: 1%{?dist}
@@ -28,14 +28,14 @@ Currently it supports the following components:
 rm -rf %{buildroot}
 %{__python} setup.py install --skip-build --root %{buildroot} --record=INSTALLED_FILES
 install -d -m 755 %{buildroot}/%{dir}
-install -d -m 755 %{buildroot}/%{python_sitelib}/grnet-agora
+install -d -m 755 %{buildroot}/%{python_sitelib}/grnet_agora
 
 %clean
 rm -rf %{buildroot}
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root,-)
-%{python_sitelib}/agora_probes
+%{python_sitelib}/grnet_agora
 %{dir}
 
 
