@@ -35,7 +35,7 @@ rm -rf %{buildroot}
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root,-)
-%{python_sitelib}/grnet_agora
+%{python_sitelib}/argo-probe-grnet-agora
 %{dir}
 
 
