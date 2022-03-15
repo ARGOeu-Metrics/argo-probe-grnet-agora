@@ -1,4 +1,4 @@
-PKGNAME=nagios-plugin-grnet-agora
+PKGNAME=argo-probe-grnet-agora
 SPECFILE=${PKGNAME}.spec
 PKGVERSION=$(shell grep -s '^Version:' $(SPECFILE) | sed -e 's/Version: *//')
 
@@ -7,9 +7,6 @@ dist:
 	python setup.py sdist
 	mv dist/${PKGNAME}-${PKGVERSION}.tar.gz .
 	rm -rf dist
-
-srpm: dist
-	rpmbuild -ts --define='dist .el6' ${PKGNAME}-${PKGVERSION}.tar.gz
 
 rpm: dist
 	rpmbuild -ta ${PKGNAME}-${PKGVERSION}.tar.gz
